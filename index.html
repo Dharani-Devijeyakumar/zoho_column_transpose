@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload and Process Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            text-align: center;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        select, input {
+            margin: 10px;
+            padding: 10px;
+            width: 80%;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: darkblue;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Upload File and Process Data</h2>
+        <input type="file" id="fileInput">
+        <select id="dataType">
+            <option value="">Select Data Type</option>
+            <option value="certification">Certification</option>
+            <option value="fund">Fund</option>
+        </select>
+        <button id="processBtn">Process Data</button>
+    </div>
+
+    <script>
+        document.getElementById("processBtn").addEventListener("click", function() {
+            let fileInput = document.getElementById("fileInput");
+            let formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            let dataType = document.getElementById("dataType").value;
+            console.log("Selected Data Type:", dataType);
+            formData.append("dataType", dataType);
+
+            fetch("http://127.0.0.1:5000/process", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err });
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement("a");
+                a.href = url;
+                a.download = "Processed_Data.xlsx";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error: " + (error.error || "Something went wrong"));
+            });
+        });
+    </script>
+</body>
+</html>
